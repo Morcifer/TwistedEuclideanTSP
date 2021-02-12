@@ -9,6 +9,15 @@ class EventType(Enum):
     def is_valid(self) -> bool:
         return self == EventType.PICKUP or self == EventType.DELIVERY
 
+    def parse_to_string(self) -> str:
+        if self == EventType.PICKUP:
+            return "P"
+
+        if self == EventType.DELIVERY:
+            return "D"
+
+        return ""
+
     @staticmethod
     def parse_from_string(string: str) -> 'EventType':
         if string == "P":
