@@ -5,8 +5,10 @@ class EventType(Enum):
     UNKNOWN = 0
     PICKUP = 1
     DELIVERY = 2
+    ORIGIN = 3
+    DESTINATION = 4
 
-    def is_valid(self) -> bool:
+    def is_real_event(self) -> bool:
         return self == EventType.PICKUP or self == EventType.DELIVERY
 
     def parse_to_string(self) -> str:
