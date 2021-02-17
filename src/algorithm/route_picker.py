@@ -31,24 +31,75 @@ class RoutePicker:
         self.__distances_dictionary = self._calculate_distance_dict(self.__algorithm_events)
 
     def find_best_route(self) -> AlgorithmRoute:
-        route = AlgorithmRoute(self.__capacity)
+        empty_route = AlgorithmRoute(
+            self.__capacity,
+            [self.__origin, self.__destination])
 
-        # Start at a depot
-        route.add_event(self.__origin)
+        greedy_initial_route = self._construct_greedy_delivery_route(empty_route)
+        route_with_pickup = self._add_pickup_to_route(greedy_initial_route)
 
-        # Add deliveries until space is gone
-        for delivery in self.__deliveries:
-            if route.does_event_fit(delivery):
-                route.add_event(delivery)
+        return route_with_pickup
 
-        # Add the best pickup
+    def _construct_greedy_delivery_route(
+            self,
+            input_route: AlgorithmRoute
+    ) -> AlgorithmRoute:
+        result = input_route.copy()
+
+        # We want to visit as many deliveries as possible, and then shorten distance
+        # so we sort by smallest to biggest and then closest (to depot, not in general)
+        deliveries_to_investigate = sorted(
+            self.__deliveries,
+            key=lambda x: (
+                x.volume,
+                self.__distances_dictionary[self.__depot_identifier][x.identifier]))
+
+        # While there is capacity remaining and deliveries remaining:
+        while result.has_capacity_left() and len(deliveries_to_investigate) > 0:
+            # Find max volume that fits
+            remaining_capacity = result.get_remaining_capacity()
+            max_volume = 0
+
+            for delivery in deliveries_to_investigate:
+                if delivery.volume <= remaining_capacity:
+                    max_volume = delivery.volume
+                    remaining_capacity -= delivery.volume
+
+            # Limit deliveries into ones that are under volume
+            deliveries_to_investigate = [
+                delivery
+                for delivery
+                in deliveries_to_investigate
+                if delivery.volume <= max_volume and (not result.is_event_in_route(delivery))
+            ]
+
+            # Find best delivery based on last location visited
+            # TODO: Find best delivery based on existing pickups in route
+            # TODO: Get rid of the hard-coded -2 for the event before the destination
+            closest_delivery = min(
+                deliveries_to_investigate,
+                key=lambda x: self.__distances_dictionary[result.events[-2].identifier][x.identifier])
+
+            # Add that best pickup in the best location
+            result.add_event_in_best_spot(closest_delivery, self.__distances_dictionary)
+
+        return result
+
+    def _add_pickup_to_route(
+            self,
+            input_route: AlgorithmRoute
+    ) -> AlgorithmRoute:
+        result = input_route.copy()
+
+        # TODO: Make sure that the chosen pickup fits in the right place
+        #  (including possibly reversing the route)
         if len(self.__pickups) > 0:
-            route.add_event(self.__pickups[0])
+            result.add_event_in_best_spot(
+                self.__pickups[0],
+                self.__distances_dictionary)
 
-        # End at a depot
-        route.add_event(self.__destination)
+        return result
 
-        return route
 
     def _calculate_distance_dict(
             self,
@@ -60,6 +111,7 @@ class RoutePicker:
             in events
         }
         result[self.__depot_identifier] = dict()
+        result[self.__depot_identifier][self.__depot_identifier] = 0
 
         for event1 in events:
             distance = self.__origin.get_distance(event1)

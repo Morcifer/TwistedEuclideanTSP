@@ -7,7 +7,7 @@ from src.model.event_type import EventType
 
 class TestAlgorithmRoute(TestCase):
     def test_route_fits_one_delivery(self):
-        route = AlgorithmRoute(100)
+        route = AlgorithmRoute(100, list())
         delivery = self._create_dummy_event(100, EventType.DELIVERY)
 
         self.assertTrue(route.does_event_fit(delivery))
@@ -18,7 +18,7 @@ class TestAlgorithmRoute(TestCase):
         self.assertEqual(1, len(route.events))
 
     def test_route_multiple_deliveries(self):
-        route = AlgorithmRoute(100)
+        route = AlgorithmRoute(100, list())
         delivery1 = self._create_dummy_event(60, EventType.DELIVERY)
         delivery2 = self._create_dummy_event(40, EventType.DELIVERY)
         delivery3 = self._create_dummy_event(60, EventType.DELIVERY)
