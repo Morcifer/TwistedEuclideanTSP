@@ -36,6 +36,9 @@ class RoutePicker:
             [self.__origin, self.__destination])
 
         greedy_initial_route = self._construct_greedy_delivery_route(empty_route)
+
+        # TODO: Implement 2-opt and/or 3-opt.
+
         route_with_pickup = self._add_pickup_to_route(greedy_initial_route)
 
         return route_with_pickup
@@ -94,15 +97,26 @@ class RoutePicker:
     ) -> AlgorithmRoute:
         result = input_route.copy()
 
-        # TODO: Make sure that the chosen pickup fits in the right place
-        #  (including possibly reversing the route)
-        if len(self.__pickups) > 0:
-            result.add_event_in_best_spot(
-                self.__pickups[0],
-                self.__distances_dictionary)
+        best_spot = 1
+        best_distance = float('inf')
+        best_pickup = None
+
+        for pickup in self.__pickups:
+            spot, distance = result.find_best_event_spot_and_distance(
+                pickup,
+                self.__distances_dictionary
+            )
+
+            if distance < best_distance:
+                best_spot = spot
+                best_distance = distance
+                best_pickup = pickup
+
+        # If there's no best_pickup, the capacity is too small for the events.
+        if best_pickup is not None:
+            result.add_event(best_pickup, best_spot)
 
         return result
-
 
     def _calculate_distance_dict(
             self,

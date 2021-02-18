@@ -118,6 +118,12 @@ class AlgorithmRoute:
 
         return True
 
+    def get_total_distance(self) -> float:
+        result = 0
+        for i in range(0, len(self.events) - 1):
+            result += self.events[i].get_distance(self.events[i+1])
+        return result
+
     def copy(self) -> 'AlgorithmRoute':
         result = AlgorithmRoute(
             self.__capacity,
