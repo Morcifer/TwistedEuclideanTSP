@@ -76,18 +76,27 @@ class RoutePicker:
                 if delivery.volume <= max_volume
             ]
 
-            # Find best delivery based on last location visited
-            # TODO: Find best delivery based on existing pickups in route
-            # TODO: Get rid of the hard-coded -2 for the event before the destination
-            closest_delivery = min(
-                deliveries_to_investigate,
-                key=lambda x: self.__distances_dictionary[result.events[-2].identifier][x.identifier])
+            # Find best delivery based on existing pickups in route
+            best_spot = 1
+            best_distance = float('inf')
+            best_delivery = None
+
+            for delivery in deliveries_to_investigate:
+                spot, distance = result.find_best_event_spot_and_distance(
+                    delivery,
+                    self.__distances_dictionary
+                )
+
+                if distance < best_distance:
+                    best_spot = spot
+                    best_distance = distance
+                    best_delivery = delivery
 
             # TODO: This is a performance problem. Fix it.
-            deliveries_to_investigate.remove(closest_delivery)
+            deliveries_to_investigate.remove(best_delivery)
 
             # Add that best pickup in the best location
-            result.add_event_in_best_spot(closest_delivery, self.__distances_dictionary)
+            result.add_event(best_delivery, best_spot)
 
         return result
 
