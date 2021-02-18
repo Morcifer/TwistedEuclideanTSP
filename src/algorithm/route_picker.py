@@ -70,7 +70,7 @@ class RoutePicker:
                 delivery
                 for delivery
                 in deliveries_to_investigate
-                if delivery.volume <= max_volume and (not result.is_event_in_route(delivery))
+                if delivery.volume <= max_volume
             ]
 
             # Find best delivery based on last location visited
@@ -79,6 +79,9 @@ class RoutePicker:
             closest_delivery = min(
                 deliveries_to_investigate,
                 key=lambda x: self.__distances_dictionary[result.events[-2].identifier][x.identifier])
+
+            # TODO: This is a performance problem. Fix it.
+            deliveries_to_investigate.remove(closest_delivery)
 
             # Add that best pickup in the best location
             result.add_event_in_best_spot(closest_delivery, self.__distances_dictionary)

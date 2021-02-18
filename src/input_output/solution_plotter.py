@@ -16,6 +16,11 @@ class SolutionPlotter:
             'ok')
 
         plt.plot(
+            SolutionPlotter.get_xs(all_events, EventType.PICKUP),
+            SolutionPlotter.get_ys(all_events, EventType.PICKUP),
+            'ob')
+
+        plt.plot(
             SolutionPlotter.get_xs(route, EventType.UNKNOWN),
             SolutionPlotter.get_ys(route, EventType.UNKNOWN),
             '-or')

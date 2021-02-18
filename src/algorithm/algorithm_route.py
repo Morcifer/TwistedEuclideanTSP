@@ -24,12 +24,22 @@ class AlgorithmRoute:
     def has_capacity_left(self) -> bool:
         return self.__remaining_capacity > 0
 
-    def does_event_fit(self, event: AlgorithmEvent) -> bool:
+    def does_event_fit(
+            self,
+            event: AlgorithmEvent,
+            spot: Optional[int] = None
+    ) -> bool:
         if event.is_delivery():
             return self.__initial_volume + event.volume <= self.__capacity
 
         if event.is_pickup():
-            return self.__remaining_capacity - event.volume >= 0
+            # At the end of the route, like add_event
+            if spot is None:
+                return self.__capacity >= event.volume
+            else:
+                # TODO: Bad performance. Store capacity per spot.
+                remaining_volume_to_delivery = sum(map(lambda x: x.volume, self.events[spot:]))
+                return self.__capacity - remaining_volume_to_delivery >= event.volume
 
         return True
 
@@ -52,30 +62,61 @@ class AlgorithmRoute:
         if event.is_pickup():
             self.__remaining_capacity += event.volume
 
-    def add_event_in_best_spot(
+    # TODO: Add tests for this method.
+    def find_best_event_spot_and_distance(
             self,
             event: AlgorithmEvent,
             distance_dictionary: Dict[int, Dict[int, float]]
-            ) -> None:
-        best_location = 1
+            ) -> (int, float):
+        best_spot = 1
         best_distance = float("inf")
 
-        for location in range(1, len(self.events)):
-            event_before = self.events[location-1]
-            event_after = self.events[location]
+        for spot in range(1, len(self.events)):
+            event_before = self.events[spot-1]
+            event_after = self.events[spot]
             extra_distance = (
                     distance_dictionary[event_before.identifier][event.identifier]
                     + distance_dictionary[event.identifier][event_after.identifier]
                     - distance_dictionary[event_before.identifier][event_after.identifier]
             )
             if extra_distance < best_distance:
-                best_location = location
-                best_distance = extra_distance
+                # For pickups, we have to also make sure it fits in the spot
+                if (not event.is_pickup()) or self.does_event_fit(event, spot):
+                    best_spot = spot
+                    best_distance = extra_distance
 
-        self.add_event(event, best_location)
+        return best_spot, best_distance
+
+    def add_event_in_best_spot(
+            self,
+            event: AlgorithmEvent,
+            distance_dictionary: Dict[int, Dict[int, float]]
+            ) -> None:
+        best_spot, _ = self.find_best_event_spot_and_distance(event, distance_dictionary)
+
+        self.add_event(event, best_spot)
 
     def is_event_in_route(self, event: AlgorithmEvent) -> bool:
         return event.identifier in self.event_ids
+
+    def is_route_valid(self) -> bool:
+        pickups = [e for e in self.events if e.is_pickup()]
+
+        if len(pickups) != 1:
+            return False
+
+        current_used_capacity = sum([e.volume for e in self.events if e.is_delivery()])
+
+        for event in self.events:
+            if event.is_pickup():
+                current_used_capacity += event.volume
+            else:
+                current_used_capacity -= event.volume
+
+            if current_used_capacity > self.__capacity:
+                return False
+
+        return True
 
     def copy(self) -> 'AlgorithmRoute':
         result = AlgorithmRoute(
