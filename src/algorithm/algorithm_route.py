@@ -7,7 +7,8 @@ class AlgorithmRoute:
     def __init__(
             self,
             capacity: int,
-            events: List[AlgorithmEvent]):
+            events: List[AlgorithmEvent]
+    ):
         self.__capacity = capacity
         self.__initial_volume = 0
         self.__remaining_capacity = capacity
@@ -67,7 +68,7 @@ class AlgorithmRoute:
             self,
             event: AlgorithmEvent,
             distance_dictionary: Dict[int, Dict[int, float]]
-            ) -> (int, float):
+    ) -> (int, float):
         best_spot = 1
         best_distance = float("inf")
 
@@ -79,6 +80,7 @@ class AlgorithmRoute:
                     + distance_dictionary[event.identifier][event_after.identifier]
                     - distance_dictionary[event_before.identifier][event_after.identifier]
             )
+
             if extra_distance < best_distance:
                 # For pickups, we have to also make sure it fits in the spot
                 if (not event.is_pickup()) or self.does_event_fit(event, spot):
@@ -91,7 +93,7 @@ class AlgorithmRoute:
             self,
             event: AlgorithmEvent,
             distance_dictionary: Dict[int, Dict[int, float]]
-            ) -> None:
+    ) -> None:
         best_spot, _ = self.find_best_event_spot_and_distance(event, distance_dictionary)
 
         self.add_event(event, best_spot)

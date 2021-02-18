@@ -11,7 +11,8 @@ class AlgorithmEvent(Event):
             x: float,
             y: float,
             volume: int,
-            event_type: EventType):
+            event_type: EventType
+    ):
         super().__init__(identifier, x, y, volume, event_type)
 
     def is_delivery(self):

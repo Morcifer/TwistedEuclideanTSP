@@ -18,13 +18,15 @@ class RoutePicker:
             event
             for event
             in self.__algorithm_events
-            if event.is_pickup()]
+            if event.is_pickup()
+        ]
 
         self.__deliveries = [
             event
             for event
             in self.__algorithm_events
-            if event.is_delivery()]
+            if event.is_delivery()
+        ]
 
         self.__capacity = capacity
 

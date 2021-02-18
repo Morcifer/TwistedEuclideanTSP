@@ -48,5 +48,6 @@ class AlgorithmRouteTest(TestCase):
         self.assertFalse(route.does_event_fit(pickup, 0))
         self.assertTrue(route.does_event_fit(pickup, 1))
 
-    def _create_dummy_event(self, volume: int, event_type: EventType) -> AlgorithmEvent:
+    @staticmethod
+    def _create_dummy_event(volume: int, event_type: EventType) -> AlgorithmEvent:
         return AlgorithmEvent(0, 0, 0, volume, event_type)
