@@ -98,6 +98,37 @@ class AlgorithmRoute:
 
         self.add_event(event, best_spot)
 
+    def two_opt(
+            self,
+            distance_dictionary: Dict[int, Dict[int, float]]
+    ) -> None:
+        improvement_found = True
+
+        while improvement_found:
+            improvement_found = False
+
+            for i in range(1, len(self.events) - 2):
+                i_dist_pre_swap = distance_dictionary[self.events[i-1].identifier][self.events[i].identifier]
+
+                for j in range(i+1, len(self.events) - 1):
+                    j_dist_pre_swap = distance_dictionary[self.events[j].identifier][self.events[j+1].identifier]
+                    d1 = i_dist_pre_swap + j_dist_pre_swap
+
+                    i_dist_post_swap = distance_dictionary[self.events[i-1].identifier][self.events[j].identifier]
+                    j_dist_post_swap = distance_dictionary[self.events[i].identifier][self.events[j+1].identifier]
+
+                    d2 = i_dist_post_swap + j_dist_post_swap
+
+                    if d1 > d2:
+                        self.events[i], self.events[j] = self.events[j], self.events[i]
+                        improvement_found = True
+
+                    if improvement_found:
+                        break  # Out of j loop
+
+                if improvement_found:
+                    break  # Out of i loop
+
     def is_event_in_route(self, event: AlgorithmEvent) -> bool:
         return event.identifier in self.event_ids
 

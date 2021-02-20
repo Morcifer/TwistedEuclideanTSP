@@ -39,7 +39,7 @@ class RoutePicker:
 
         greedy_initial_route = self._construct_greedy_delivery_route(empty_route)
 
-        # TODO: Implement 2-opt and/or 3-opt.
+        greedy_initial_route.two_opt(self.__distances_dictionary)
 
         route_with_pickup = self._add_pickup_to_route(greedy_initial_route)
 
