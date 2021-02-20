@@ -10,11 +10,12 @@ class AlgorithmRoute:
             events: List[AlgorithmEvent]
     ):
         self.__capacity = capacity
-        self.__initial_volume = 0
+        self.__initial_used_capacity = 0
         self.__remaining_capacity = capacity
 
+        self.__event_ids: Set[int] = set()
+
         self.events: List[AlgorithmEvent] = list()
-        self.event_ids: Set[int] = set()
 
         for event in events:
             self.add_event(event)
@@ -31,7 +32,7 @@ class AlgorithmRoute:
             spot: Optional[int] = None
     ) -> bool:
         if event.is_delivery():
-            return self.__initial_volume + event.volume <= self.__capacity
+            return self.__initial_used_capacity + event.volume <= self.__capacity
 
         if event.is_pickup():
             # At the end of the route, like add_event
@@ -54,10 +55,10 @@ class AlgorithmRoute:
         else:
             self.events.insert(spot, event)
 
-        self.event_ids.add(event.identifier)
+        self.__event_ids.add(event.identifier)
 
         if event.is_delivery():
-            self.__initial_volume += event.volume
+            self.__initial_used_capacity += event.volume
             self.__remaining_capacity -= event.volume
 
         if event.is_pickup():
@@ -130,7 +131,7 @@ class AlgorithmRoute:
                     break  # Out of i loop
 
     def is_event_in_route(self, event: AlgorithmEvent) -> bool:
-        return event.identifier in self.event_ids
+        return event.identifier in self.__event_ids
 
     def is_route_valid(self) -> bool:
         pickups = [e for e in self.events if e.is_pickup()]
